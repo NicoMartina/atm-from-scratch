@@ -1,0 +1,3 @@
+nicomartina,500.0
+chrismartina,300.0
+marudami,100.0

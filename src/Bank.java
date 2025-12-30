@@ -1,4 +1,9 @@
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Scanner;
 
 public class Bank {
     ArrayList<Account> accounts = new ArrayList<>();
@@ -154,6 +159,46 @@ public class Bank {
         System.out.println("Transfered $ " + amount + " from account " + fromAccountName + "to account " + toAccountName);
 
 
+    }
+
+    public void saveToFile(){
+        try {
+            FileWriter writer = new FileWriter("accounts.txt");
+            for (Account a : accounts){
+                writer.write(a.getAccountName() + "," + a.getBalance() + "\n");
+            }
+            writer.close();
+            System.out.println("Data saved successfully");
+
+        } catch (IOException e) {
+            throw new RuntimeException("Error saving account's data: " + e.getMessage());
+        }
+    }
+
+    public void loadFromFile(){
+        try {
+            File file = new File("accounts.txt");
+            if (!file.exists()){
+                return;
+            }
+            Scanner scanner = new Scanner(file);
+            while (scanner.hasNextLine()){
+                String line = scanner.nextLine();
+                String[] parts = line.split(",");
+                if (parts.length == 2){
+                    String accountName = parts[0];
+                    String accountBalanceStr = parts[1];
+                    double accountBalance = Double.parseDouble(accountBalanceStr);
+                    accounts.add(new Account(accountName, accountBalance));
+                }
+            }
+
+            scanner.close();
+            System.out.println("Accounts loaded successfully");
+
+        } catch (FileNotFoundException e){
+            System.out.println("Error loading accounts: " + e.getMessage());
+        }
     }
 
 

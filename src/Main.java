@@ -9,6 +9,7 @@ public class Main {
         int option = 0;
         Bank bank = new Bank();
 
+        bank.loadFromFile();
         while (option != 8){
 
             System.out.println(" ==== Bank Management System ====");
@@ -22,8 +23,16 @@ public class Main {
             System.out.println("8. Exit");
             System.out.println();
             System.out.println("Enter choice: ");
-            option = scanner.nextInt();
-            scanner.nextLine();
+
+            try {
+                option = scanner.nextInt();
+                scanner.nextLine();
+            } catch (Exception e) {
+                System.out.println("Invalid input! Please enter a number (1-8): ");
+                scanner.nextLine();
+                continue;
+            }
+
 
             switch (option){
                 case 1:
@@ -70,6 +79,7 @@ public class Main {
                     bank.transferBetweenAccounts(fromAccount, toAccount,amountToTransfer);
                     break;
                 case 8:
+                    bank.saveToFile();
                     System.out.println("Goodbye!");
                     break;
                 default:
