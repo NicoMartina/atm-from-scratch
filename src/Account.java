@@ -24,13 +24,16 @@ public class Account {
         System.out.println("Deposited $" + amount + ". New balance: $" + balance);
     }
 
-    public void withdraw(double amount){
+    public void withdraw(double amount) throws InsufficientFundsException{
         if (amount <= 0){
-            System.out.println("Please enter a valid amount");
-            return;
-        } else if (amount > balance){
-            System.out.println("Not enough money. Please enter another amount.");
-            return;
+            throw new InsufficientFundsException("Amount must be positive");
+
+        }
+
+        if (amount > balance){
+            throw new InsufficientFundsException(
+                    "Insufficient funds. Balance $" + balance + ", Requested: $" + amount
+            );
         }
 
         balance -= amount;

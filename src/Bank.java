@@ -100,7 +100,13 @@ public class Bank {
         boolean found = false;
         for (Account a : accounts){
             if (a.getAccountName().equalsIgnoreCase(accountName)){
-                a.withdraw(amount);
+                try{
+                    a.withdraw(amount);
+                } catch (InsufficientFundsException e){
+                    System.out.println("Withdrawal failed: " + e.getMessage());
+                } catch (IllegalArgumentException e){
+                    System.out.println("Invalid amount: " + e.getMessage());
+                }
                 found = true;
                 break;
             }
@@ -154,11 +160,15 @@ public class Bank {
             return;
         }
 
-        fromAccount.withdraw(amount);
-        toAccount.deposit(amount);
-        System.out.println("Transfered $ " + amount + " from account " + fromAccountName + "to account " + toAccountName);
-
-
+        try {
+            fromAccount.withdraw(amount);
+            toAccount.deposit(amount);
+            System.out.println("Transfered $ " + amount + " from account " + fromAccountName + "to account " + toAccountName);
+        } catch(InsufficientFundsException e) {
+            System.out.println("Transfer  failed: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            System.out.println("Invalid amount: " + e.getMessage());
+        }
     }
 
     public void saveToFile(){
