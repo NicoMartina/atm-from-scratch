@@ -2,45 +2,43 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Scanner;
 
 public class Bank {
-    ArrayList<Account> accounts = new ArrayList<>();
+
+    HashMap<String, Account> accounts = new HashMap<>();
 
     public void createAccount(String accountName, double balance){
+        if (accounts.containsKey(accountName)){
+            System.out.println("Account already exists");
+            return;
+        }
         Account newAccount = new Account(accountName, balance);
-        accounts.add(newAccount);
+        accounts.put(accountName, newAccount);
         System.out.println("Account added successfully");
     }
+
+
 
     public void deleteAccount(String accountName){
         if (accounts.isEmpty()){
             System.out.println("There are no accounts to delete.");
             return;
         }
-        
-        boolean found = false;
-        for (int i = accounts.size() - 1; i >= 0; i--) {
-            Account a = accounts.get(i);
-
-            if (a.getAccountName().equalsIgnoreCase(accountName)){
-                accounts.remove(i);
-                System.out.println("Account from " + " has been deleted successfully.");
-                System.out.println("---------");
-                found = true;
-            }
-        }
-
-
-        if (!found){
-            System.out.println("The account you are looking for does not exist.");
+        Account removed = accounts.remove(accountName);
+        if (removed == null){
+            System.out.println("Account not found.");
+        } else {
+            System.out.println("Account '" + accountName + "' deleted successfully");
         }
     }
 
 
+
+
     public void displayAccounts(){
-        for (Account a : accounts){
+        for (Account a : accounts.values()){
             System.out.println("Account: " + a.getAccountName());
             System.out.println("Balance: " + a.getBalance());
             System.out.println("---------");
@@ -48,125 +46,70 @@ public class Bank {
     }
 
     public void searchAccount(String accountName){
-        if (accounts.isEmpty()){
-            System.out.println("No accounts with that name exist.");
+        Account account = accounts.get(accountName);
+
+        if (account == null){
+            System.out.println("Account doesn't exist");
             return;
         }
-        boolean found = false;
-        for (Account a : accounts){
-            if (a.getAccountName().equalsIgnoreCase(accountName)){
-                System.out.println("Account: " + a.getAccountName());
-                System.out.println("Balance: " + a.getBalance());
-                System.out.println("---------");
-                System.out.println();
-                found = true;
-            }
-        }
 
-        if (!found){
-            System.out.println("The account with name " + accountName + " doesn't exist");
-            System.out.println("-----");
-            System.out.println();
-        }
+        System.out.println("Account: " + account.getAccountName());
+        System.out.println("Balance: " + account.getBalance());
+        System.out.println("---------");
     }
 
 
     public void depositToAccount(String accountName, double balance){
-        if (accounts.isEmpty()){
-            System.out.println("The account doesn't exist");
+        Account account = accounts.get(accountName);
+        if (account == null){
+            System.out.println("Account not found.");
             return;
         }
 
-        boolean found = false;
-        for (Account a : accounts){
-            if (a.getAccountName().equalsIgnoreCase(accountName)){
-                a.deposit(balance);
-                found = true;
-                break;
-            }
-        }
-
-        if (!found){
-            System.out.println("Account not found.");
-        }
+        account.deposit(balance);
     }
 
     public void withdrawFromAccount(String accountName, double amount){
-        if (accounts.isEmpty()){
-            System.out.println("The account doesn't exist");
+        Account account = accounts.get(accountName);
+
+        if (account == null){
+            System.out.println("Account doesn't exist");
             return;
         }
 
-        boolean found = false;
-        for (Account a : accounts){
-            if (a.getAccountName().equalsIgnoreCase(accountName)){
-                try{
-                    a.withdraw(amount);
-                } catch (InsufficientFundsException e){
-                    System.out.println("Withdrawal failed: " + e.getMessage());
-                } catch (IllegalArgumentException e){
-                    System.out.println("Invalid amount: " + e.getMessage());
-                }
-                found = true;
-                break;
-            }
-        }
-
-        if (!found) {
-            System.out.println("Account not found.");
+        try{
+            accounts.get(accountName).withdraw(amount);
+        } catch(InsufficientFundsException e) {
+            System.out.println("Withdrawal: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            System.out.println("Invalid amount: " + e.getMessage());
         }
     }
 
     public void transferBetweenAccounts(String fromAccountName, String toAccountName, double amount){
-        if (accounts.isEmpty()){
-            System.out.println("The account you are looking for doesn't exist");
-            return;
-        }
-
         if (fromAccountName.equalsIgnoreCase(toAccountName)){
             System.out.println("Cannot transfer to same account.");
             return;
         }
 
+        Account fromAccount = accounts.get(fromAccountName);
+        Account toAccount = accounts.get(toAccountName);
 
-        Account fromAccount = null;
-        for (Account a : accounts){
-            if (a.getAccountName().equalsIgnoreCase(fromAccountName)){
-               fromAccount = a;
-               break;
-            }
-        }
-
-        Account toAccount = null;
-        for (Account a : accounts){
-            if (a.getAccountName().equalsIgnoreCase(toAccountName)){
-                toAccount = a;
-                break;
-            }
-        }
-
-        if (fromAccount == null) {
-            System.out.println("The source was not found");
+        if (fromAccount == null){
+            System.out.println("Source account not found.");
             return;
         }
 
-        if (toAccount == null) {
-            System.out.println("The source was not found");
+        if (toAccount == null){
+            System.out.println("Destination account not found.");
             return;
         }
-
-        if (fromAccount.getBalance() < amount){
-            System.out.println("Not enough money on " + fromAccountName);
-            return;
-        }
-
-        try {
-            fromAccount.withdraw(amount);
-            toAccount.deposit(amount);
-            System.out.println("Transfered $ " + amount + " from account " + fromAccountName + "to account " + toAccountName);
-        } catch(InsufficientFundsException e) {
-            System.out.println("Transfer  failed: " + e.getMessage());
-        } catch (IllegalArgumentException e) {
+        try{
+            accounts.get(fromAccountName).withdraw(amount);
+            accounts.get(toAccountName).deposit(amount);
+        } catch (InsufficientFundsException e){
+            System.out.println("Transfer failed: " + e.getMessage());
+        } catch(IllegalArgumentException e) {
             System.out.println("Invalid amount: " + e.getMessage());
         }
     }
@@ -174,7 +117,7 @@ public class Bank {
     public void saveToFile(){
         try {
             FileWriter writer = new FileWriter("accounts.txt");
-            for (Account a : accounts){
+            for (Account a : accounts.values()){
                 writer.write(a.getAccountName() + "," + a.getBalance() + "\n");
             }
             writer.close();
@@ -199,7 +142,7 @@ public class Bank {
                     String accountName = parts[0];
                     String accountBalanceStr = parts[1];
                     double accountBalance = Double.parseDouble(accountBalanceStr);
-                    accounts.add(new Account(accountName, accountBalance));
+                    accounts.put(accountName, new Account(accountName, accountBalance));
                 }
             }
 
